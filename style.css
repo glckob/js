@@ -1,0 +1,75 @@
+/* General Body and Font Styles */
+body {
+    font-family: 'Noto Sans Khmer', sans-serif;
+    background-color: #f0f2f5;
+}
+
+.font-koulen { 
+    font-family: 'Koulen', sans-serif; 
+}
+
+.font-moul { 
+    font-family: 'Moul', sans-serif; 
+}
+
+/* Transitions for Modals and Views */
+.modal, .page-view, .class-detail-view {
+    transition: opacity 0.25s ease;
+}
+
+.modal-content {
+    transition: transform 0.25s ease;
+}
+
+/* Toast Notification Styles */
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    transform: translateX(-50%) translateY(-20px); /* Centered and initially off-screen */
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Centered and slides in */
+}
+
+/* Active Tab Button Style */
+.tab-btn.active {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    background-color: #eff6ff;
+}
+
+/* Input Field Styles */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+select {
+    border-width: 1px;
+    border-color: #93c5fd; /* Tailwind blue-300 */
+}
+
+input:focus, select:focus {
+     border-color: #3b82f6 !important; /* Tailwind blue-500 */
+     --tw-ring-color: #3b82f6 !important;
+     box-shadow: 0 0 0 1px #3b82f6 !important;
+}
+
+/* Hide number input arrows (spinners) */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield; /* For Firefox */
+}

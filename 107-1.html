@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="app-title">ប្រព័ន្ធគ្រប់គ្រងសាលារៀន</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Koulen&family=Moul&family=Noto+Sans+Khmer:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Link to your external CSS file -->
+    <link rel="stylesheet" href="style.css">
+    <!-- SheetJS library for Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <!-- QR Code Generator Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="text-gray-800">
+    <!-- Login/Register Screen -->
+    <div id="auth-screen" class="flex items-center justify-center h-screen bg-gray-200">
+        <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
+            <h2 id="login-school-name" class="font-moul text-2xl text-center text-blue-700 mb-6">ប្រព័ន្ធគ្រប់គ្រងសាលារៀន</h2>
+            <div id="login-form-container">
+                <h3 class="font-koulen text-xl mb-4">ចូលប្រើប្រាស់</h3>
+                <form id="login-form">
+                    <div class="mb-4"><label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">អ៊ីមែល</label><input type="email" id="login-email" required class="w-full px-3 py-2 rounded-md shadow-sm"></div>
+                    <div class="mb-6"><label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">ពាក្យសម្ងាត់</label><input type="password" id="login-password" required class="w-full px-3 py-2 rounded-md shadow-sm"></div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">ចូលប្រើ</button>
+                    <p class="text-center text-sm text-gray-600 mt-4">មិនទាន់មានគណនី? <a href="#" id="show-register-link" class="font-medium text-blue-600 hover:text-blue-500">បង្កើតគណនីថ្មី</a></p>
+                </form>
+            </div>
+            <div id="register-form-container" class="hidden">
+                 <h3 class="font-koulen text-xl mb-4">បង្កើតគណនីថ្មី</h3>
+                <form id="register-form">
+                    <div class="mb-4"><label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">អ៊ីមែល</label><input type="email" id="register-email" required class="w-full px-3 py-2 rounded-md shadow-sm"></div>
+                    <div class="mb-6"><label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">ពាក្យសម្ងាត់</label><input type="password" id="register-password" required class="w-full px-3 py-2 rounded-md shadow-sm"></div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">បង្កើតគណនី</button>
+                     <p class="text-center text-sm text-gray-600 mt-4">មានគណនីហើយ? <a href="#" id="show-login-link" class="font-medium text-blue-600 hover:text-blue-500">ចូលប្រើប្រាស់</a></p>
+                </form>
+            </div>
+            <p id="auth-error" class="text-red-500 text-sm mt-4 text-center"></p>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="flex h-screen bg-gray-100 hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-md flex flex-col">
+            <div class="p-4 border-b"><h1 id="sidebar-school-name" class="font-moul text-xl text-blue-700 text-center">គ្រប់គ្រងសាលា</h1></div>
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#" id="nav-dashboard" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg bg-blue-100"><i class="fas fa-tachometer-alt w-6 h-6 text-blue-500"></i><span class="ml-3">ទូទៅ</span></a>
+                <a href="#" id="nav-years" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"><i class="fas fa-calendar-alt w-6 h-6 text-gray-500"></i><span class="ml-3">ឆ្នាំសិក្សា</span></a>
+                <a href="#" id="nav-teachers" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"><i class="fas fa-chalkboard-teacher w-6 h-6 text-gray-500"></i><span class="ml-3">គ្រូបន្ទុកថ្នាក់</span></a>
+                <a href="#" id="nav-classes" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"><i class="fas fa-school w-6 h-6 text-gray-500"></i><span class="ml-3">បន្ទុកថ្នាក់</span></a>
+                <a href="#" id="nav-settings" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"><i class="fas fa-cog w-6 h-6 text-gray-500"></i><span class="ml-3">កំណត់សាលា-ការប្រឡង</span></a>
+                <a href="#" id="nav-students" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"><i class="fas fa-user-graduate w-6 h-6 text-gray-500"></i><span class="ml-3">សិស្សានុសិស្ស</span></a>
+                <a href="#" id="nav-subjects" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"><i class="fas fa-book w-6 h-6 text-gray-500"></i><span class="ml-3">មុខវិជ្ជា</span></a>
+                <a href="#" id="nav-scores" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"><i class="fas fa-marker w-6 h-6 text-gray-500"></i><span class="ml-3">បញ្ចូលពិន្ទុ</span></a>
+                <a href="#" id="nav-rankings" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg hover:bg-gray-100"><i class="fas fa-trophy w-6 h-6 text-gray-500"></i><span class="ml-3">ចំណាត់ថ្នាក់</span></a>
+            </nav>
+            <div class="p-4 border-t">
+                <p id="user-email-display" class="text-sm text-gray-600 break-words"></p>
+                <button id="logout-btn" class="w-full mt-2 bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 text-sm"><i class="fas fa-sign-out-alt mr-2"></i>ចាកចេញ</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <!-- Main Views Container -->
+            <div id="main-views-container">
+                <!-- Dashboard View -->
+                <div id="view-dashboard" class="page-view">
+                    <h2 class="font-koulen text-2xl mb-4">ផ្ទាំងគ្រប់គ្រងទូទៅ</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div id="dash-card-years" class="bg-white p-6 rounded-lg shadow-sm flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-all"><div><p class="text-gray-500">ឆ្នាំសិក្សាសរុប</p><p id="stats-years" class="text-3xl font-bold">0</p></div><i class="fas fa-calendar-alt text-4xl text-blue-300"></i></div>
+                        <div id="dash-card-classes" class="bg-white p-6 rounded-lg shadow-sm flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-all"><div><p class="text-gray-500">ថ្នាក់សរុប</p><p id="stats-classes" class="text-3xl font-bold">0</p></div><i class="fas fa-school text-4xl text-green-300"></i></div>
+                        <div id="dash-card-teachers" class="bg-white p-6 rounded-lg shadow-sm flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-all"><div><p class="text-gray-500">គ្រូសរុប</p><p id="stats-teachers" class="text-3xl font-bold">0</p></div><i class="fas fa-chalkboard-teacher text-4xl text-yellow-300"></i></div>
+                        <div id="dash-card-students" class="bg-white p-6 rounded-lg shadow-sm flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-all"><div><p class="text-gray-500">សិស្សសរុប</p><p id="stats-students" class="text-3xl font-bold">0</p></div><i class="fas fa-user-graduate text-4xl text-red-300"></i></div>
+                    </div>
+
+                    <!-- Stats Section with Chart -->
+                    <div class="mt-8 grid grid-cols-1 gap-6">
+                        <!-- Chart Container -->
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-koulen text-xl">ស្ថិតិសិស្សតាមភេទ</h3>
+                                <div class="w-full md:w-1/2">
+                                    <label for="chart-year-filter" class="sr-only">ជ្រើសរើសឆ្នាំសិក្សា</label>
+                                    <select id="chart-year-filter" class="block w-full rounded-md shadow-sm"></select>
+                                </div>
+                            </div>
+                            <div class="h-96 w-full flex justify-center items-center">
+                                <canvas id="studentGenderChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="view-years" class="page-view hidden"><div class="flex justify-between items-center mb-4"><h2 class="font-koulen text-2xl">គ្រប់គ្រងឆ្នាំសិក្សា</h2><button id="add-year-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700"><i class="fas fa-plus mr-2"></i>បន្ថែមឆ្នាំសិក្សា</button></div><div id="years-list" class="bg-white p-4 rounded-lg shadow-sm"></div></div>
+                <div id="view-classes" class="page-view hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="font-koulen text-2xl">គ្រប់គ្រងបន្ទុកថ្នាក់</h2>
+                        <button id="add-class-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-plus mr-2"></i>បង្កើតថ្នាក់ថ្មី</button>
+                    </div>
+                    <div class="mb-4">
+                        <label for="class-year-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសឆ្នាំសិក្សា</label>
+                        <select id="class-year-filter" class="mt-1 block w-full md:w-1/3 rounded-md shadow-sm"></select>
+                    </div>
+                    <div id="classes-list" class="bg-white p-4 rounded-lg shadow-sm"></div>
+                </div>
+                <div id="view-scores" class="page-view hidden">
+                     <div class="flex justify-between items-center mb-4">
+                        <h2 class="font-koulen text-2xl">បញ្ចូលពិន្ទុតាមថ្នាក់</h2>
+                        <button id="save-scores-page-btn" class="bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700 hidden"><i class="fas fa-save mr-2"></i>រក្សាទុកពិន្ទុ</button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <!-- Filters -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label for="scores-year-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសឆ្នាំសិក្សា</label>
+                                <select id="scores-year-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                            </div>
+                            <div>
+                                <label for="scores-class-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសថ្នាក់</label>
+                                <select id="scores-class-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                            </div>
+                            <div>
+                                <label for="scores-exam-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសការប្រឡង</label>
+                                <select id="scores-exam-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                            </div>
+                        </div>
+                        <!-- Score Entry Table -->
+                        <div id="scores-page-table-container" class="overflow-auto relative" style="max-height: 65vh;">
+                            <p class="text-center text-gray-500 py-8">សូមជ្រើសរើសឆ្នាំសិក្សា ថ្នាក់ និងការប្រឡង ដើម្បីចាប់ផ្តើមបញ្ចូលពិន្ទុ។</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Rankings View -->
+                <div id="view-rankings" class="page-view hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="font-koulen text-2xl">ចំណាត់ថ្នាក់សិស្ស</h2>
+                        <button id="export-rankings-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 hidden"><i class="fas fa-file-excel mr-2"></i>នាំចេញ Excel</button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <!-- Filters -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label for="rankings-year-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសឆ្នាំសិក្សា</label>
+                                <select id="rankings-year-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                            </div>
+                            <div>
+                                <label for="rankings-class-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសថ្នាក់</label>
+                                <select id="rankings-class-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                            </div>
+                            <div>
+                                <label for="rankings-exam-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសការប្រឡង</label>
+                                <select id="rankings-exam-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                            </div>
+                        </div>
+                        <!-- Rankings Table -->
+                        <div id="rankings-table-container" class="overflow-auto relative" style="max-height: 65vh;">
+                            <p class="text-center text-gray-500 py-8">សូមជ្រើសរើសឆ្នាំសិក្សា ថ្នាក់ និងការប្រឡង ដើម្បីបង្ហាញចំណាត់ថ្នាក់។</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="view-teachers" class="page-view hidden"><div class="flex justify-between items-center mb-4"><h2 class="font-koulen text-2xl">គ្រប់គ្រងគ្រូបន្ទុកថ្នាក់</h2><button id="add-teacher-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow hover:bg-yellow-600"><i class="fas fa-plus mr-2"></i>បន្ថែមគ្រូថ្មី</button></div><div id="teachers-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div></div>
+                <div id="view-students" class="page-view hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="font-koulen text-2xl">គ្រប់គ្រងសិស្សានុសិស្ស</h2>
+                        <div>
+                            <button id="export-students-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 mr-2"><i class="fas fa-file-excel mr-2"></i>នាំចេញ Excel</button>
+                            <button id="add-student-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600"><i class="fas fa-plus mr-2"></i>បន្ថែមសិស្សថ្មី</button>
+                        </div>
+                    </div>
+                    <!-- Filters -->
+                    <div class="flex gap-4 mb-4">
+                        <div class="flex-1">
+                            <label for="student-year-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសឆ្នាំសិក្សា</label>
+                            <select id="student-year-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                        </div>
+                        <div class="flex-1">
+                            <label for="student-class-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសថ្នាក់</label>
+                            <select id="student-class-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                        </div>
+                    </div>
+                    <!-- Student Stats Display -->
+                    <div id="student-stats-container" class="mb-4 p-4 bg-white rounded-lg shadow-sm hidden">
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <div>
+                                <span class="text-sm text-gray-500">សិស្សក្នុងតារាង:</span>
+                                <span id="student-stats-total" class="font-bold text-xl">0</span>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-500">សិស្សស្រី:</span>
+                                <span id="student-stats-female" class="font-bold text-xl text-pink-500">0</span>
+                            </div>
+                            <div class="border-l pl-4 flex-1">
+                                <span class="text-sm text-gray-500">សរុបតាមថ្នាក់:</span>
+                                <div id="student-stats-by-class" class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                                    <!-- Stats by class will be injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Search Bar -->
+                    <div id="student-search-container" class="mb-4 hidden">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="student-search-input" class="block w-full pl-10 pr-3 py-2 rounded-md leading-5 bg-white placeholder-gray-500" placeholder="ស្វែងរកតាមអត្តលេខ, ឈ្មោះ, ថ្នាក់...">
+                        </div>
+                    </div>
+                    <div id="students-list" class="bg-white p-4 rounded-lg shadow-sm overflow-x-auto"></div>
+                </div>
+                <div id="view-subjects" class="page-view hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="font-koulen text-2xl">គ្រប់គ្រងមុខវិជ្ជា</h2>
+                        <button id="add-subject-btn" class="bg-purple-600 text-white px-4 py-2 rounded-lg shadow hover:bg-purple-700"><i class="fas fa-plus mr-2"></i>បន្ថែមមុខវិជ្ជា</button>
+                    </div>
+                     <div class="mb-4">
+                        <label for="subject-year-filter" class="block text-sm font-medium text-gray-700">ជ្រើសរើសឆ្នាំសិក្សា</label>
+                        <select id="subject-year-filter" class="mt-1 block w-full md:w-1/3 rounded-md shadow-sm"></select>
+                    </div>
+                    <div id="subjects-list" class="bg-white p-4 rounded-lg shadow-sm"></div>
+                </div>
+                <div id="view-settings" class="page-view hidden">
+                    <h2 class="font-koulen text-2xl mb-6">ការកំណត់ទូទៅ</h2>
+                    <!-- General Settings -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                        <h3 class="font-koulen text-xl mb-4 border-b pb-2">ព័ត៌មានសាលា</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Left Side: Inputs -->
+                            <div>
+                                <div class="space-y-4 mb-4">
+                                    <div>
+                                        <label for="school-name-input" class="block text-sm font-medium text-gray-700">ឈ្មោះសាលារៀន</label>
+                                        <input type="text" id="school-name-input" class="mt-1 block w-full rounded-md shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="director-stamp-url" class="block text-sm font-medium text-gray-700">រូបភាពត្រានាយកសាលា (URL)</label>
+                                        <input type="url" id="director-stamp-url" class="mt-1 block w-full rounded-md shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="qr-link-url" class="block text-sm font-medium text-gray-700">QR link</label>
+                                        <input type="url" id="qr-link-url" class="mt-1 block w-full rounded-md shadow-sm">
+                                    </div>
+                                </div>
+                                <button id="save-school-info-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">រក្សាទុក</button>
+                            </div>
+                            <!-- Right Side: Previews -->
+                            <div class="flex justify-around items-center pt-6">
+                                <div class="text-center">
+                                    <p class="text-sm font-medium text-gray-700 mb-2">ត្រានាយកសាលា</p>
+                                    <div class="w-32 h-32 border-2 border-dashed rounded-md flex items-center justify-center bg-gray-50">
+                                        <img id="stamp-preview" src="" alt="Stamp Preview" class="max-w-full max-h-full object-contain">
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                     <p class="text-sm font-medium text-gray-700 mb-2">QR កូដ</p>
+                                    <div id="qr-code-preview" class="w-32 h-32 border-2 border-dashed rounded-md flex items-center justify-center bg-gray-50 p-1"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Academic Year Settings -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-koulen text-xl mb-4 border-b pb-2">កំណត់ឆមាសតាមឆ្នាំសិក្សា</h3>
+                        <div class="mb-4">
+                            <label for="settings-year-select" class="block text-sm font-medium text-gray-700">ជ្រើសរើសឆ្នាំសិក្សា</label>
+                            <select id="settings-year-select" class="mt-1 block w-full md:w-1/2 rounded-md shadow-sm"></select>
+                        </div>
+                        <form id="semester-settings-form" class="hidden">
+                             <div class="mb-4">
+                                <input type="text" id="start-year-test-input" class="w-full md:w-1/2 rounded-md font-bold" placeholder="ឈ្មោះតេស្តដើមឆ្នាំ">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Semester 1 -->
+                                <div>
+                                    <h4 class="font-koulen text-lg mb-2">ឆមាសទី១</h4>
+                                    <div class="space-y-2">
+                                        <select data-semester="1" data-month="1" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="1" data-month="2" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="1" data-month="3" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="1" data-month="4" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="1" data-month="5" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="1" data-month="6" class="semester-month-input w-full rounded-md"></select>
+                                        <input type="text" data-semester="1" data-month="7" class="semester-month-exam-input mt-4 w-full rounded-md font-semibold" placeholder="ឈ្មោះប្រឡងប្រចាំខែឆមាសទី១">
+                                        <input type="text" id="semester1-exam-input" class="mt-4 w-full rounded-md font-bold" placeholder="ឈ្មោះប្រឡងឆមាសទី១">
+                                        <input type="text" id="semester1-report-name" class="mt-4 w-full rounded-md font-bold" placeholder="ឈ្មោះសៀវភៅប្រចាំឆមាសទី១">
+                                    </div>
+                                </div>
+                                <!-- Semester 2 -->
+                                <div>
+                                    <h4 class="font-koulen text-lg mb-2">ឆមាសទី២</h4>
+                                    <div class="space-y-2">
+                                        <select data-semester="2" data-month="1" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="2" data-month="2" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="2" data-month="3" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="2" data-month="4" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="2" data-month="5" class="semester-month-input w-full rounded-md"></select>
+                                        <select data-semester="2" data-month="6" class="semester-month-input w-full rounded-md"></select>
+                                        <input type="text" data-semester="2" data-month="7" class="semester-month-exam-input mt-4 w-full rounded-md font-semibold" placeholder="ឈ្មោះប្រឡងប្រចាំខែឆមាសទី២">
+                                        <input type="text" id="semester2-exam-input" class="mt-4 w-full rounded-md font-bold" placeholder="ឈ្មោះប្រឡងឆមាសទី២">
+                                        <input type="text" id="semester2-report-name" class="mt-4 w-full rounded-md font-bold" placeholder="ឈ្មោះសៀវភៅប្រចាំឆមាសទី២">
+                                    </div>
+                                </div>
+                            </div>
+                             <div class="mt-6">
+                                <input type="text" id="end-year-result-input" class="w-full md:w-1/2 rounded-md font-bold" placeholder="ឈ្មោះលទ្ធផលប្រចាំឆ្នាំ">
+                            </div>
+                            <button type="submit" class="mt-6 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">រក្សាទុកការកំណត់ឆមាស</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Class Detail View -->
+            <div id="class-detail-container" class="class-detail-view hidden">
+                <button id="back-to-classes-btn" class="mb-4 text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>ត្រឡប់ទៅបញ្ជីថ្នាក់</button>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 id="class-detail-title" class="font-koulen text-3xl mb-2"></h2>
+                    <p id="class-detail-teacher" class="text-gray-600 mb-4"></p>
+                    
+                    <!-- Tabs -->
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-6">
+                            <button data-tab="settings" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">ការកំណត់</button>
+                            <button data-tab="students" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">បញ្ជីសិស្ស</button>
+                            <button data-tab="scores" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">បញ្ចូលពិន្ទុ</button>
+                            <button data-tab="results" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">លទ្ធផលប្រចាំខែ</button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="mt-6">
+                        <div id="tab-content-settings" class="tab-content">
+                            <h3 class="font-koulen text-lg mb-4">កំណត់មុខវិជ្ជាសម្រាប់ថ្នាក់</h3>
+                            <form id="class-settings-form">
+                                <div class="mb-4">
+                                    <h4 class="block text-sm font-medium text-gray-700 mb-2">មុខវិជ្ជាត្រូវប្រឡង</h4>
+                                    <div id="class-subjects-list" class="space-y-2 max-h-60 overflow-y-auto border p-3 rounded-md"></div>
+                                </div>
+                                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">រក្សាទុកការកំណត់</button>
+                            </form>
+                        </div>
+                        <div id="tab-content-students" class="tab-content hidden">
+                             <h3 class="font-koulen text-lg mb-4">គ្រប់គ្រងបញ្ជីសិស្ស</h3>
+                             <form id="class-students-form">
+                                <div id="class-students-list" class="space-y-2 max-h-80 overflow-y-auto border p-3 rounded-md bg-gray-50"></div>
+                                <button type="submit" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">រក្សាទុកបញ្ជីសិស្ស</button>
+                             </form>
+                        </div>
+                        <div id="tab-content-scores" class="tab-content hidden">
+                            <h3 class="font-koulen text-lg mb-4">បញ្ចូលពិន្ទុប្រចាំខែ</h3>
+                            <div class="mb-4">
+                                <label for="score-month-select" class="block text-sm font-medium text-gray-700">ជ្រើសរើសការប្រឡង</label>
+                                <select id="score-month-select" class="mt-1 block w-full md:w-1/3 rounded-md shadow-sm"></select>
+                            </div>
+                            <div id="score-entry-table-container" class="overflow-x-auto"></div>
+                             <button id="save-scores-btn" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700">រក្សាទុកពិន្ទុ</button>
+                        </div>
+                        <div id="tab-content-results" class="tab-content hidden">
+                            <h3 class="font-koulen text-lg mb-4">លទ្ធផល និងតារាងកិត្តិយស</h3>
+                             <div class="flex space-x-2 mb-4">
+                                <button id="sem1-results-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">លទ្ធផលឆមាសទី១</button>
+                                <button id="sem2-results-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">លទ្ធផលឆមាសទី២</button>
+                             </div>
+                             <div id="results-table-container" class="overflow-x-auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Footer -->
+            <footer class="text-center mt-8 text-sm text-gray-500">
+                <p class="font-moul">កម្មវិធីគ្រប់គ្រងបន្ទុកថ្នាក់</p>
+                <p>ផលិតដោយ លោកគ្រូ វង្ស សាណូវុទ្ធ ក្រុមស្រាវជ្រាវ៖ គ្រូអាយធីស្រុកស្រែ</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Modals Container -->
+    <div id="modal-container"></div>
+    
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="toast max-w-xs bg-gray-800 text-white p-4 rounded-lg shadow-lg">
+        <p id="toast-message"></p>
+    </div>
+
+    <!-- Link to your new external JavaScript file -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
