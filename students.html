@@ -1,0 +1,99 @@
+<!-- FILE: students.html (Students Page) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students - School Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Koulen&family=Moul&family=Noto+Sans+Khmer:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body class="text-gray-800">
+    <div id="app-container" class="flex h-screen bg-gray-100 hidden">
+        <!-- Sidebar (Same as other pages) -->
+        <aside class="w-64 bg-white shadow-md flex flex-col">
+            <div class="p-4 border-b"><h1 id="sidebar-school-name" class="font-moul text-xl text-blue-700 text-center">School Management</h1></div>
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="index.html" id="nav-dashboard" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg"><i class="fas fa-tachometer-alt w-6 h-6 text-gray-500"></i><span class="ml-3">Dashboard</span></a>
+                <a href="years.html" id="nav-years" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg"><i class="fas fa-calendar-alt w-6 h-6 text-gray-500"></i><span class="ml-3">Academic Years</span></a>
+                <a href="teachers.html" id="nav-teachers" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg"><i class="fas fa-chalkboard-teacher w-6 h-6 text-gray-500"></i><span class="ml-3">Teachers</span></a>
+                <a href="classes.html" id="nav-classes" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg"><i class="fas fa-school w-6 h-6 text-gray-500"></i><span class="ml-3">Classes</span></a>
+                <a href="settings.html" id="nav-settings" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg"><i class="fas fa-cog w-6 h-6 text-gray-500"></i><span class="ml-3">Settings</span></a>
+                <a href="students.html" id="nav-students" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg"><i class="fas fa-user-graduate w-6 h-6 text-gray-500"></i><span class="ml-3">Students</span></a>
+                <a href="subjects.html" id="nav-subjects" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg"><i class="fas fa-book w-6 h-6 text-gray-500"></i><span class="ml-3">Subjects</span></a>
+                <a href="scores.html" id="nav-scores" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg"><i class="fas fa-marker w-6 h-6 text-gray-500"></i><span class="ml-3">Score Entry</span></a>
+                <a href="rankings.html" id="nav-rankings" class="nav-link flex items-center p-2 text-base font-normal text-gray-900 rounded-lg"><i class="fas fa-trophy w-6 h-6 text-gray-500"></i><span class="ml-3">Rankings</span></a>
+            </nav>
+            <div class="p-4 border-t">
+                <p id="user-email-display" class="text-sm text-gray-600 break-words"></p>
+                <button id="logout-btn" class="w-full mt-2 bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 text-sm"><i class="fas fa-sign-out-alt mr-2"></i>Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area for Students -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <div id="view-students">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-koulen text-2xl">Manage Students</h2>
+                    <div>
+                        <button id="export-students-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 mr-2"><i class="fas fa-file-excel mr-2"></i>Export to Excel</button>
+                        <button id="add-student-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600"><i class="fas fa-plus mr-2"></i>Add New Student</button>
+                    </div>
+                </div>
+                <!-- Filters -->
+                <div class="flex gap-4 mb-4">
+                    <div class="flex-1">
+                        <label for="student-year-filter" class="block text-sm font-medium text-gray-700">Filter by Academic Year</label>
+                        <select id="student-year-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="student-class-filter" class="block text-sm font-medium text-gray-700">Filter by Class</label>
+                        <select id="student-class-filter" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                    </div>
+                </div>
+                <!-- Student Stats Display -->
+                <div id="student-stats-container" class="mb-4 p-4 bg-white rounded-lg shadow-sm hidden">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div>
+                            <span class="text-sm text-gray-500">Students in Table:</span>
+                            <span id="student-stats-total" class="font-bold text-xl">0</span>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500">Female Students:</span>
+                            <span id="student-stats-female" class="font-bold text-xl text-pink-500">0</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Search Bar -->
+                <div id="student-search-container" class="mb-4 hidden">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" id="student-search-input" class="block w-full pl-10 pr-3 py-2 rounded-md leading-5 bg-white placeholder-gray-500" placeholder="Search by ID, Name, Class...">
+                    </div>
+                </div>
+                <div id="students-list" class="bg-white p-4 rounded-lg shadow-sm overflow-x-auto">
+                    <!-- Student table will be rendered here by JavaScript -->
+                </div>
+            </div>
+            <footer class="text-center mt-8 text-sm text-gray-500">
+                <p class="font-moul">Class Management Application</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Modals and Toasts will be injected here by JavaScript -->
+    <div id="modal-container"></div>
+    <div id="toast-notification" class="toast max-w-xs bg-gray-800 text-white p-4 rounded-lg shadow-lg">
+        <p id="toast-message"></p>
+    </div>
+
+    <!-- Main and page-specific scripts -->
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/students.js"></script>
+</body>
+</html>
